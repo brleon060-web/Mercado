@@ -8,68 +8,58 @@
 <body>
     <div class="menu-nav"><a href="index.html" class="btn-nav">VOLTAR</a></div>
     <div class="container">
-        <select id="selCliente"><option value="">Selecione o Cliente</option></select>
-        <select id="selProduto"><option value="">Selecione o Produto</option></select>
-        
-        <div style="display: flex; gap: 10px;">
-            <button onclick="vender('pago')" style="background:#2ecc71; flex:1">PAGO</button>
-            <button onclick="vender('fiado')" style="background:#e74c3c; flex:1">FIADO</button>
+        <select id="selC"><option value="">Cliente...</option></select>
+        <select id="selP"><option value="">Produto...</option></select>
+        <div style="display:flex; gap:10px">
+            <button onclick="vender('pago')" class="btn-success" style="flex:1">PAGO</button>
+            <button onclick="vender('fiado')" class="btn-danger" style="flex:1">FIADO</button>
         </div>
-
-        <h3>Últimas Vendas / Fiados</h3>
-        <div id="historicoVendas"></div>
+        <h3>Histórico / Estorno</h3>
+        <div id="listaV"></div>
     </div>
-
+    <script src="app.js"></script>
     <script>
-        let clientes = JSON.parse(localStorage.getItem('aj_clientes') || '[]');
-        let produtos = JSON.parse(localStorage.getItem('aj_produtos') || '[]');
-        let vendas = JSON.parse(localStorage.getItem('aj_vendas') || '[]');
+        let clientes = DB.get('clientes');
+        let produtos = DB.get('produtos');
+        let vendas = DB.get('vendas');
 
-        function carregarSelects() {
-            document.getElementById('selCliente').innerHTML += clientes.map(c => `<option value="${c}">${c}</option>`).join('');
-            document.getElementById('selProduto').innerHTML += produtos.map((p, i) => 
-                `<option value="${i}">${p.nome} (R$ ${p.preco}) - Est: ${p.qtd}</option>`).join('');
-        }
+        document.getElementById('selC').innerHTML += clientes.map(c => `<option value="${c}">${c}</option>`).join('');
+        document.getElementById('selP').innerHTML += produtos.map((p,i) => `<option value="${i}">${p.nome} (R$${p.preco})</option>`).join('');
 
         function vender(tipo) {
-            const cIndex = document.getElementById('selCliente').value;
-            const pIndex = document.getElementById('selProduto').value;
-
-            if(!cIndex || pIndex === "") return alert("Selecione cliente e produto!");
-
-            let prod = produtos[pIndex];
-
-            if(prod.qtd <= 0) return alert("Produto sem estoque!");
-
-            // Atualiza estoque
-            prod.qtd -= 1;
-            
-            // Registra venda
-            vendas.unshift({
-                cliente: cIndex,
-                produto: prod.nome,
-                preco: prod.preco,
-                tipo: tipo
-            });
-
-            localStorage.setItem('aj_produtos', JSON.stringify(produtos));
-            localStorage.setItem('aj_vendas', JSON.stringify(vendas));
-            location.reload(); // Atualiza interface
+            const pi = document.getElementById('selP').value;
+            const c = document.getElementById('selC').value;
+            if(!c || pi==="") return;
+            let p = produtos[pi];
+            if(p.qtd <= 0) return alert("Sem estoque!");
+            p.qtd--;
+            vendas.unshift({ cliente: c, produto: p.nome, preco: p.preco, tipo: tipo, data: new Date().toLocaleString() });
+            DB.set('produtos', produtos);
+            DB.set('vendas', vendas);
+            render();
         }
 
-        function renderizarVendas() {
-            document.getElementById('historicoVendas').innerHTML = vendas.map(v => `
+        function estornar(i) {
+            if(confirm("Cancelar esta venda? O produto voltará ao estoque.")) {
+                let v = vendas[i];
+                let p = produtos.find(item => item.nome === v.produto);
+                if(p) p.qtd++;
+                vendas.splice(i, 1);
+                DB.set('produtos', produtos);
+                DB.set('vendas', vendas);
+                render();
+            }
+        }
+
+        function render() {
+            document.getElementById('listaV').innerHTML = vendas.map((v, i) => `
                 <div class="item-lista">
-                    <span>${v.cliente} -> ${v.produto}</span>
-                    <span style="color: ${v.tipo === 'fiado' ? '#ff5252' : '#2ecc71'}">
-                        R$ ${v.preco.toFixed(2)} (${v.tipo.toUpperCase()})
-                    </span>
+                    <div style="font-size:12px"><b>${v.cliente}</b><br>${v.produto} (${v.tipo})</div>
+                    <button onclick="estornar(${i})" class="btn-danger">X</button>
                 </div>
             `).join('');
         }
-
-        carregarSelects();
-        renderizarVendas();
+        render();
     </script>
 </body>
 </html>
