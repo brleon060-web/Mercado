@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Clientes - AJ Mercado</title>
+</head>
+<body>
+    <div class="menu-nav"><a href="index.html" class="btn-nav">VOLTAR</a></div>
+    <div class="container">
+        <h2>Novo Cliente</h2>
+        <input type="text" id="nomeCliente" placeholder="Nome Completo">
+        <button onclick="salvarCliente()">CADASTRAR</button>
+        <hr>
+        <h2>Lista de Clientes</h2>
+        <div id="listaClientes"></div>
+    </div>
+
+    <script>
+        let clientes = JSON.parse(localStorage.getItem('aj_clientes') || '[]');
+
+        function salvarCliente() {
+            const nome = document.getElementById('nomeCliente').value.trim();
+            if(nome && !clientes.includes(nome)) {
+                clientes.push(nome);
+                localStorage.setItem('aj_clientes', JSON.stringify(clientes));
+                document.getElementById('nomeCliente').value = '';
+                renderizar();
+            }
+        }
+
+        function renderizar() {
+            const lista = document.getElementById('listaClientes');
+            lista.innerHTML = clientes.map(c => `<div class="item-lista">${c}</div>`).join('');
+        }
+        renderizar();
+    </script>
+</body>
+</html>
