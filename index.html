@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>AJ Mercado - Menu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <h1>AJ MERCADO</h1>
+    <p>Allyson e Junior</p>
+    <div class="menu-nav">
+        <a href="vendas.html" class="btn-nav">VENDAS</a>
+        <a href="clientes.html" class="btn-nav">CLIENTES</a>
+        <a href="produtos.html" class="btn-nav">PRODUTOS</a>
+    </div>
+    <div class="container">
+        <h2>Resumo Financeiro</h2>
+        <div id="dividaTotal" class="total-divida">R$ 0,00</div>
+        <p style="text-align: center;">Total em "Fiado" a receber</p>
+    </div>
+
+    <script>
+        const vendas = JSON.parse(localStorage.getItem('aj_vendas') || '[]');
+        const total = vendas.filter(v => v.tipo === 'fiado')
+                            .reduce((acc, curr) => acc + parseFloat(curr.preco), 0);
+        document.getElementById('dividaTotal').innerText = `R$ ${total.toFixed(2)}`;
+    </script>
+</body>
+</html>
