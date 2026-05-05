@@ -8,41 +8,70 @@
 <body>
     <div class="menu-nav"><a href="index.html" class="btn-nav">VOLTAR</a></div>
     <div class="container">
+        <h3>Cadastrar / Editar</h3>
         <input type="text" id="pNome" placeholder="Nome do Produto">
-        <input type="number" id="pPreco" placeholder="Preço (ex: 5.50)">
-        <input type="number" id="pQtd" placeholder="Qtd Estoque">
-        <button onclick="salvarProduto()">CADASTRAR PRODUTO</button>
+        <input type="number" id="pPreco" placeholder="Preço">
+        <input type="number" id="pQtd" placeholder="Estoque">
+        <input type="hidden" id="pIndex" value="-1">
+        <button onclick="buscarFoto()" style="background:#555">BUSCAR FOTO AUTOMÁTICA</button>
+        <div id="statusFoto" style="font-size:10px; margin:5px 0"></div>
+        <button onclick="salvar()" class="btn-success" style="width:100%; margin-top:10px">SALVAR PRODUTO</button>
         <hr>
-        <input type="text" id="busca" placeholder="🔍 Buscar produto..." oninput="renderizar()">
-        <div id="listaProdutos"></div>
+        <input type="text" id="busca" placeholder="🔍 Buscar..." oninput="render()">
+        <div id="lista"></div>
     </div>
-
+    <script src="app.js"></script>
     <script>
-        let produtos = JSON.parse(localStorage.getItem('aj_produtos') || '[]');
+        let produtos = DB.get('produtos');
+        let tempFoto = "";
 
-        function salvarProduto() {
+        async function buscarFoto() {
             const nome = document.getElementById('pNome').value;
-            const preco = document.getElementById('pPreco').value;
-            const qtd = document.getElementById('pQtd').value;
-
-            if(nome && preco && qtd) {
-                produtos.push({ nome, preco: parseFloat(preco), qtd: parseInt(qtd) });
-                localStorage.setItem('aj_produtos', JSON.stringify(produtos));
-                renderizar();
-            }
+            if(!nome) return alert("Digite o nome primeiro!");
+            document.getElementById('statusFoto').innerText = "Buscando...";
+            tempFoto = `https://source.unsplash.com/featured/?${nome},grocery`;
+            document.getElementById('statusFoto').innerText = "Foto encontrada!";
         }
 
-        function renderizar() {
-            const busca = document.getElementById('busca').value.toLowerCase();
-            const lista = document.getElementById('listaProdutos');
-            lista.innerHTML = produtos
-                .filter(p => p.nome.toLowerCase().includes(busca))
-                .map(p => `<div class="item-lista">
-                    <span>${p.nome} - <b>R$ ${p.preco.toFixed(2)}</b></span>
-                    <span>[${p.qtd}]</span>
-                </div>`).join('');
+        function salvar() {
+            const idx = parseInt(document.getElementById('pIndex').value);
+            const novo = {
+                nome: document.getElementById('pNome').value,
+                preco: parseFloat(document.getElementById('pPreco').value),
+                qtd: parseInt(document.getElementById('pQtd').value),
+                foto: tempFoto || "https://via.placeholder.com/50"
+            };
+            if(idx === -1) produtos.push(novo);
+            else produtos[idx] = novo;
+            
+            DB.set('produtos', produtos);
+            location.reload();
         }
-        renderizar();
+
+        function editar(i) {
+            document.getElementById('pNome').value = produtos[i].nome;
+            document.getElementById('pPreco').value = produtos[i].preco;
+            document.getElementById('pQtd').value = produtos[i].qtd;
+            document.getElementById('pIndex').value = i;
+            tempFoto = produtos[i].foto;
+            window.scrollTo(0,0);
+        }
+
+        function excluir(i) { if(confirm("Apagar produto?")) { produtos.splice(i,1); DB.set('produtos', produtos); render(); } }
+
+        function render() {
+            const b = document.getElementById('busca').value.toLowerCase();
+            document.getElementById('lista').innerHTML = produtos.map((p, i) => {
+                if(!p.nome.toLowerCase().includes(b)) return '';
+                return `<div class="item-lista">
+                    <img src="${p.foto}" class="img-prod">
+                    <div style="flex:1"><b>${p.nome}</b><br>R$ ${p.preco.toFixed(2)} [${p.qtd}]</div>
+                    <button onclick="editar(${i})">📝</button>
+                    <button onclick="excluir(${i})" class="btn-danger">🗑️</button>
+                </div>`;
+            }).join('');
+        }
+        render();
     </script>
 </body>
 </html>
