@@ -1,79 +1,15 @@
 :root {
-    --bg: #121212;
-    --card: #1e1e1e;
-    --primary: #8a2be2;
-    --text: #ffffff;
-    --accent: #b388ff;
+    --bg: #121212; --card: #1e1e1e; --primary: #8a2be2;
+    --text: #ffffff; --accent: #b388ff; --danger: #ff5252; --success: #2ecc71;
 }
-
-body {
-    font-family: 'Segoe UI', sans-serif;
-    background-color: var(--bg);
-    color: var(--text);
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-h1, h2 { color: var(--primary); margin-bottom: 10px; }
-
-.menu-nav {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-button, .btn-nav {
-    background-color: var(--primary);
-    color: white;
-    border: none;
-    padding: 15px 25px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 8px;
-    text-decoration: none;
-    transition: transform 0.1s;
-}
-
-button:active, .btn-nav:active { transform: scale(0.95); background-color: var(--accent); }
-
-input, select {
-    background: var(--card);
-    border: 2px solid var(--primary);
-    color: white;
-    padding: 12px;
-    font-size: 16px;
-    border-radius: 5px;
-    width: 100%;
-    max-width: 400px;
-    margin-bottom: 10px;
-}
-
-.container {
-    width: 100%;
-    max-width: 600px;
-    background: var(--card);
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.5);
-}
-
-.item-lista {
-    padding: 10px;
-    border-bottom: 1px solid #333;
-    display: flex;
-    justify-content: space-between;
-}
-
-.total-divida {
-    font-size: 24px;
-    color: #ff5252;
-    text-align: center;
-    margin: 20px 0;
-    font-weight: bold;
-}
+body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
+.menu-nav { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; justify-content: center; }
+.btn-nav, button { background: var(--primary); color: white; border: none; padding: 12px 20px; font-size: 16px; font-weight: bold; cursor: pointer; border-radius: 8px; text-decoration: none; display: inline-block; }
+button.btn-danger { background: var(--danger); }
+button.btn-success { background: var(--success); }
+input, select { background: var(--card); border: 2px solid var(--primary); color: white; padding: 12px; font-size: 16px; border-radius: 5px; width: 90%; max-width: 400px; margin-bottom: 10px; }
+.container { width: 95%; max-width: 600px; background: var(--card); padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); margin-bottom: 20px; }
+.item-lista { padding: 10px; border-bottom: 1px solid #333; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.img-prod { width: 50px; height: 50px; border-radius: 5px; object-fit: cover; background: #333; }
+.total-divida { font-size: 28px; color: var(--danger); text-align: center; font-weight: bold; margin: 10px 0; }
+.sync-bar { width: 100%; background: #333; padding: 5px; text-align: center; font-size: 12px; margin-bottom: 10px; border-radius: 5px; }
