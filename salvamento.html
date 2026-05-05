@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Configurações e Backup - AJ Mercado</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .status-box {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: bold;
+        }
+        .status-off { background: #444; color: #ccc; }
+        .status-on { background: #2ecc71; color: #fff; }
+        .config-group {
+            margin-bottom: 20px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+        small { color: #aaa; display: block; margin-top: 5px; }
+    </style>
+</head>
+<body>
+    <div class="menu-nav">
+        <a href="index.html" class="btn-nav">VOLTAR</a>
+    </div>
+
+    <div class="container">
+        <h1>Sincronização Cloud</h1>
+        <div id="statusSync" class="status-box status-off">NUVEM NÃO CONECTADA</div>
+
+        <div class="config-group">
+            <h3>Configuração GitHub</h3>
+            <input type="password" id="ghToken" placeholder="Token de Acesso (PAT)">
+            <input type="text" id="ghUser" placeholder="Seu Usuário GitHub">
+            <input type="text" id="ghRepo" placeholder="Nome do Repositório">
+            <small>Os dados serão salvos no arquivo 'database.json' do seu repo.</small>
+            <button onclick="testarConexao()" style="margin-top:10px; background:#6f42c1">TESTAR E SALVAR CONFIGS</button>
+        </div>
+
+        <div class="config-group">
+            <h3>Backup Manual</h3>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="exportarLocal()" style="background:#555; flex:1">BAIXAR CÓPIA (.JSON)</button>
+                <button onclick="document.getElementById('fileInput').click()" style="background:#555; flex:1">SUBIR CÓPIA</button>
+            </div>
+            <input type="file" id="fileInput" style="display:none" onchange="importarLocal(event)">
+        </div>
+
+        <div class="config-group">
+            <h3>Busca de Fotos</h3>
+            <p>O sistema usa a API do Unsplash para buscar fotos automaticamente ao cadastrar produtos.</p>
+            <div id="previewFoto" style="width:100px; height:100px; background:#333; border-radius:8px; margin: 10px auto; display:flex; align-items:center; justify-content:center; overflow:hidden">
+                <span style="font-size:10px">Preview</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Carrega configurações salvas
+        document.getElementById('ghToken').value = localStorage.getItem('aj_gh_token') || '';
+        document.getElementById('ghUser').value = localStorage.getItem('aj_gh_user') || '';
+        document.getElementById('ghRepo').value = localStorage.getItem('aj_gh_repo') || '';
+
+        function testarConexao() {
+            const token = document.getElementById('ghToken').value;
+            const user = document.getElementById('ghUser').value;
+            const repo = document.getElementById('ghRepo').value;
+
+            if(!token || !user || !repo) return alert("Preencha todos os campos do GitHub!");
+
+            // Salva as credenciais no LocalStorage do navegador
+            localStorage.setItem('aj_gh_token', token);
+            localStorage.setItem('aj_gh_user', user);
+            localStorage.setItem('aj_gh_repo', repo);
+
+            // Tenta ler o arquivo no GitHub para ver se funciona
+            const url = `https://api.github.com/repos/${user}/${repo}/contents/database.json`;
+            
+            fetch(url, {
+                headers: { 'Authorization': `token ${token}` }
+            })
+            .then(res => {
+                if(res.ok) {
+                    document.getElementById('statusSync').innerText = "NUVEM CONECTADA ✅";
+                    document.getElementById('statusSync').className = "status-box status-on";
+                    alert("Conexão com GitHub realizada com sucesso!");
+                } else {
+                    alert("Erro ao conectar. Verifique o Token e se o arquivo 'database.json' existe no seu repositório.");
+                }
+            })
+            .catch(err => alert("Erro de rede: " + err));
+        }
+
+        function exportarLocal() {
+            const dados = {
+                clientes: JSON.parse(localStorage.getItem('aj_clientes') || '[]'),
+                produtos: JSON.parse(localStorage.getItem('aj_produtos') || '[]'),
+                vendas: JSON.parse(localStorage.getItem('aj_vendas') || '[]')
+            };
+            const blob = new Blob([JSON.stringify(dados, null, 2)], {type: 'application/json'});
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup_aj_mercado_${new Date().toLocaleDateString()}.json`;
+            a.click();
+        }
+
+        function importarLocal(event) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const dados = JSON.parse(e.target.result);
+                if(dados.clientes && dados.produtos && dados.vendas) {
+                    localStorage.setItem('aj_clientes', JSON.stringify(dados.clientes));
+                    localStorage.setItem('aj_produtos', JSON.stringify(dados.produtos));
+                    localStorage.setItem('aj_vendas', JSON.stringify(dados.vendas));
+                    alert("Dados importados com sucesso! Reiniciando...");
+                    location.reload();
+                } else {
+                    alert("Arquivo de backup inválido.");
+                }
+            };
+            reader.readAsText(event.target.files[0]);
+        }
+    </script>
+</body>
+</html>
