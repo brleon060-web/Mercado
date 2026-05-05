@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Produtos - AJ Mercado</title>
+</head>
+<body>
+    <div class="menu-nav"><a href="index.html" class="btn-nav">VOLTAR</a></div>
+    <div class="container">
+        <input type="text" id="pNome" placeholder="Nome do Produto">
+        <input type="number" id="pPreco" placeholder="Preço (ex: 5.50)">
+        <input type="number" id="pQtd" placeholder="Qtd Estoque">
+        <button onclick="salvarProduto()">CADASTRAR PRODUTO</button>
+        <hr>
+        <input type="text" id="busca" placeholder="🔍 Buscar produto..." oninput="renderizar()">
+        <div id="listaProdutos"></div>
+    </div>
+
+    <script>
+        let produtos = JSON.parse(localStorage.getItem('aj_produtos') || '[]');
+
+        function salvarProduto() {
+            const nome = document.getElementById('pNome').value;
+            const preco = document.getElementById('pPreco').value;
+            const qtd = document.getElementById('pQtd').value;
+
+            if(nome && preco && qtd) {
+                produtos.push({ nome, preco: parseFloat(preco), qtd: parseInt(qtd) });
+                localStorage.setItem('aj_produtos', JSON.stringify(produtos));
+                renderizar();
+            }
+        }
+
+        function renderizar() {
+            const busca = document.getElementById('busca').value.toLowerCase();
+            const lista = document.getElementById('listaProdutos');
+            lista.innerHTML = produtos
+                .filter(p => p.nome.toLowerCase().includes(busca))
+                .map(p => `<div class="item-lista">
+                    <span>${p.nome} - <b>R$ ${p.preco.toFixed(2)}</b></span>
+                    <span>[${p.qtd}]</span>
+                </div>`).join('');
+        }
+        renderizar();
+    </script>
+</body>
+</html>
