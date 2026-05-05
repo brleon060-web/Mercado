@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style.css">
+    <title>Vendas - AJ Mercado</title>
+</head>
+<body>
+    <div class="menu-nav"><a href="index.html" class="btn-nav">VOLTAR</a></div>
+    <div class="container">
+        <select id="selCliente"><option value="">Selecione o Cliente</option></select>
+        <select id="selProduto"><option value="">Selecione o Produto</option></select>
+        
+        <div style="display: flex; gap: 10px;">
+            <button onclick="vender('pago')" style="background:#2ecc71; flex:1">PAGO</button>
+            <button onclick="vender('fiado')" style="background:#e74c3c; flex:1">FIADO</button>
+        </div>
+
+        <h3>Últimas Vendas / Fiados</h3>
+        <div id="historicoVendas"></div>
+    </div>
+
+    <script>
+        let clientes = JSON.parse(localStorage.getItem('aj_clientes') || '[]');
+        let produtos = JSON.parse(localStorage.getItem('aj_produtos') || '[]');
+        let vendas = JSON.parse(localStorage.getItem('aj_vendas') || '[]');
+
+        function carregarSelects() {
+            document.getElementById('selCliente').innerHTML += clientes.map(c => `<option value="${c}">${c}</option>`).join('');
+            document.getElementById('selProduto').innerHTML += produtos.map((p, i) => 
+                `<option value="${i}">${p.nome} (R$ ${p.preco}) - Est: ${p.qtd}</option>`).join('');
+        }
+
+        function vender(tipo) {
+            const cIndex = document.getElementById('selCliente').value;
+            const pIndex = document.getElementById('selProduto').value;
+
+            if(!cIndex || pIndex === "") return alert("Selecione cliente e produto!");
+
+            let prod = produtos[pIndex];
+
+            if(prod.qtd <= 0) return alert("Produto sem estoque!");
+
+            // Atualiza estoque
+            prod.qtd -= 1;
+            
+            // Registra venda
+            vendas.unshift({
+                cliente: cIndex,
+                produto: prod.nome,
+                preco: prod.preco,
+                tipo: tipo
+            });
+
+            localStorage.setItem('aj_produtos', JSON.stringify(produtos));
+            localStorage.setItem('aj_vendas', JSON.stringify(vendas));
+            location.reload(); // Atualiza interface
+        }
+
+        function renderizarVendas() {
+            document.getElementById('historicoVendas').innerHTML = vendas.map(v => `
+                <div class="item-lista">
+                    <span>${v.cliente} -> ${v.produto}</span>
+                    <span style="color: ${v.tipo === 'fiado' ? '#ff5252' : '#2ecc71'}">
+                        R$ ${v.preco.toFixed(2)} (${v.tipo.toUpperCase()})
+                    </span>
+                </div>
+            `).join('');
+        }
+
+        carregarSelects();
+        renderizarVendas();
+    </script>
+</body>
+</html>
